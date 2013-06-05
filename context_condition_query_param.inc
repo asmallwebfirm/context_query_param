@@ -80,11 +80,12 @@ class context_condition_query_param extends context_condition {
 
   /**
    * Evaluates the condition.
+   *
+   * @param $query_params
+   *   An array of query parameters against which to check (e.g. $_GET).
    */
-  function execute() {
+  function execute(array $query_params) {
     if ($this->condition_used()) {
-      $query_params = drupal_get_query_parameters();
-
       // Loop through contexts.
       foreach ($this->get_contexts() as $context) {
         $context_values = $this->fetch_from_context($context, 'values');
@@ -131,19 +132,25 @@ class context_condition_query_param extends context_condition {
   protected function check_query_params($request, $context) {
     switch ($context['operator']) {
       case self::op_equals:
-        $response = $request[$context['name']] == $context['value'];
+        $check = isset($request[$context['name']]) ? $request[$context['name']] : NULL;
+        $response = $check == $context['value'];
         break;
 
       case self::op_not_equals:
-        $response = $request[$context['name']] != $context['value'];
+        // This should evaluate to false if the parameter is not set, so we pass
+        // a default value of the parameter value itself to evaluate false.
+        $check = isset($request[$context['name']]) ? $request[$context['name']] : $context['value'];
+        $response = $check != $context['value'];
         break;
 
       case self::op_empty:
-        $response = empty($request[$context['name']]);
+        $check = isset($request[$context['name']]) ? (string) $request[$context['name']] : NULL;
+        $response = isset($check) && strlen($check) == 0;
         break;
 
       case self::op_not_empty:
-        $response = !empty($request[$context['name']]);
+        $check = isset($request[$context['name']]) ? (string) $request[$context['name']] : NULL;
+        $response = isset($check) && strlen($check) > 0;
         break;
 
       case self::op_not_set:

@@ -54,7 +54,8 @@ function context_query_param_context_plugins() {
  */
 function context_query_param_init() {
   if ($plugin = context_get_plugin('condition', 'query_param')) {
-    $plugin->execute();
+    $params = drupal_get_query_parameters();
+    $plugin->execute($params);
   }
 }
 

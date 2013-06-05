@@ -1,0 +1,151 @@
+<?php
+
+/**
+ * @file
+ * Tests for the Context Query Parameters module.
+ */
+
+
+/**
+ * Unit tests for Context Query Parameters.
+ */
+class ContextQueryParamUnitTest extends DrupalUnitTestCase {
+
+  /**
+   * Structured array of tests to be run in self::testContextConditionExecute().
+   */
+  protected $test_conditions = array(
+    // Tests that ensure query parameters exist and their values are equal.
+    'equal to' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'equals',
+        'value' => 'bar',
+      ),
+      'requests' => array(
+        'True' => array(
+          array('foo' => 'bar'),
+          array('bar' => 'baz', 'foo' => 'bar'),
+        ),
+        'False' => array(
+          array('foo' => 'notBar'),
+          array('bar' => 'baz'),
+        ),
+      ),
+    ),
+    // Tests that ensure query parameters exist and their values are not equal.
+    'not equal to' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'not_equals',
+        'value' => 'bar',
+      ),
+      'requests' => array(
+        'True' => array(
+          array('foo' => 'notBar'),
+          array('foo' => 'baz', 'bar' => 'baz'),
+        ),
+        'False' => array(
+          array('foo' => 'bar'),
+          array('bar' => 'baz', 'foo' => 'bar'),
+          array('notFoo' => 'notBar'),
+        ),
+      ),
+    ),
+    // Tests that ensure query parameters exist and their values are empty.
+    'empty' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'empty',
+      ),
+      'requests' => array(
+        'True' => array(
+          array('foo' => ''),
+          array('bar' => 'baz', 'foo' => ''),
+        ),
+        'False' => array(
+          array('foo' => 'notEmpty'),
+          array('foo' => 0),
+          array('bar' => 'baz'),
+        ),
+      ),
+    ),
+    // Tests that ensure query parameters exist and their values are not empty.
+    'not empty' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'not_empty',
+      ),
+      'requests' => array(
+        'True' => array(
+          array('foo' => 'notEmpty'),
+          array('foo' => 0),
+          array('bar' => 'baz', 'foo' => 'buzz'),
+        ),
+        'False' => array(
+          array('foo' => ''),
+          array('bar' => 'baz'),
+          array(),
+        ),
+      ),
+    ),
+    // Tests that ensure query parameters do not exist.
+    'not set' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'not_set',
+      ),
+      // A number of requests against which to test.
+      'requests' => array(
+        'True' => array(
+          array(),
+          array('notFoo' => 'notBar'),
+          array('notFoo' => 'notBar', 'baz' => 'buzz'),
+        ),
+        'False' => array(
+          array('foo' => 'bar'),
+          array('foo' => ''),
+          array('foo' => 0, 'notFoo' => 'notBar'),
+        ),
+      ),
+    ),
+  );
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Context Query Parameters unit tests',
+      'description' => 'Unit tests for the Context Query Parameter context condition.',
+      'group' => 'Context',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp();
+
+    // Set up a query_param context condition here.
+    module_load_include('inc', 'context_query_param', 'context_condition_query_param');
+    module_load_include('inc', 'context_query_param', 'tests/mock_context_condition_query_param');
+    $registry = context_query_param_context_registry();
+    $key = 'query_param';
+    $this->condition = new mock_context_condition_query_param($key, $registry['conditions'][$key]);
+  }
+
+  /**
+   * Runs through all defined tests.
+   */
+  function testContextConditionExecute() {
+    foreach ($this->test_conditions as $group => $test) {
+      foreach ($test['requests'] as $assertion => $requests) {
+        foreach ($requests as $request) {
+          $response = $this->condition->test_check_query_params($request, $test['ruleset']);
+          $assert = 'assert' . $assertion;
+          $this->$assert($response, format_string('Successfully asserted %assertion for test "@test" with request ?!query', array(
+            '%assertion' => $assertion,
+            '@test' => ($test['ruleset']['name'] . ' is ' . $group . (isset($test['ruleset']['value']) ? ' ' . $test['ruleset']['value'] : '')),
+            '!query' => http_build_query($request),
+          )), $group);
+        }
+      }
+    }
+  }
+}
