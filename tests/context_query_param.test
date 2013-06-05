@@ -30,6 +30,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
         'False' => array(
           array('foo' => 'notBar'),
           array('bar' => 'baz'),
+          array(),
         ),
       ),
     ),
@@ -49,6 +50,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
           array('foo' => 'bar'),
           array('bar' => 'baz', 'foo' => 'bar'),
           array('notFoo' => 'notBar'),
+          array(),
         ),
       ),
     ),
@@ -67,6 +69,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
           array('foo' => 'notEmpty'),
           array('foo' => 0),
           array('bar' => 'baz'),
+          array(),
         ),
       ),
     ),
