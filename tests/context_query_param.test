@@ -126,8 +126,8 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
     parent::setUp();
 
     // Set up a query_param context condition here.
-    module_load_include('inc', 'context_query_param', 'context_condition_query_param');
-    module_load_include('inc', 'context_query_param', 'tests/mock_context_condition_query_param');
+    require_once(__DIR__ . '/../context_condition_query_param.inc');
+    require_once(__DIR__ . '/mock_context_condition_query_param.inc');
     $registry = context_query_param_context_registry();
     $key = 'query_param';
     $this->condition = new mock_context_condition_query_param($key, $registry['conditions'][$key]);
