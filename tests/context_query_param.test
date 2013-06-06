@@ -126,12 +126,14 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
     parent::setUp();
 
     // Attempt to load all necessary classes manually. This syntax is necessary
-    // because module_load_include() does not work without a DB.
-    require_once(__DIR__ . '/../context_condition_query_param.inc');
-    require_once(__DIR__ . '/mock_context_condition_query_param.inc');
+    // because module_load_include() does not work without a DB. Order matters
+    // because require_once will call the autoloader, which touches the DB.
     if (!class_exists('context_condition', FALSE)) {
       require_once(__DIR__ . '/../../context/plugins/context_condition.inc');
     }
+    require_once(__DIR__ . '/../context_condition_query_param.inc');
+    require_once(__DIR__ . '/mock_context_condition_query_param.inc');
+
 
     // Set up a query_param context condition here.
     $registry = context_query_param_context_registry();
