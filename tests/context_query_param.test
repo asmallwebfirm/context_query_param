@@ -133,7 +133,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
     }
     require_once(__DIR__ . '/../context_condition_query_param.inc');
     require_once(__DIR__ . '/mock_context_condition_query_param.inc');
-
+    require_once(__DIR__ . '/../context_query_param.module');
 
     // Set up a query_param context condition here.
     $registry = context_query_param_context_registry();
