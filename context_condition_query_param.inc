@@ -13,6 +13,7 @@ class context_condition_query_param extends context_condition {
   const op_not_equals = 'not_equals';
   const op_empty = 'empty';
   const op_not_empty = 'not_empty';
+  const op_set = 'set';
   const op_not_set = 'not_set';
 
   /**
@@ -137,9 +138,7 @@ class context_condition_query_param extends context_condition {
         break;
 
       case self::op_not_equals:
-        // This should evaluate to false if the parameter is not set, so we pass
-        // a default value of the parameter value itself to evaluate false.
-        $check = isset($request[$context['name']]) ? $request[$context['name']] : $context['value'];
+        $check = isset($request[$context['name']]) ? $request[$context['name']] : NULL;
         $response = $check != $context['value'];
         break;
 
@@ -151,6 +150,10 @@ class context_condition_query_param extends context_condition {
       case self::op_not_empty:
         $check = isset($request[$context['name']]) ? (string) $request[$context['name']] : NULL;
         $response = isset($check) && strlen($check) > 0;
+        break;
+
+      case self::op_set:
+        $response = isset($request[$context['name']]);
         break;
 
       case self::op_not_set:
@@ -194,7 +197,8 @@ class context_condition_query_param extends context_condition {
       '#options' => array(
         self::op_equals => t('must equal'),
         self::op_not_equals => t('must not equal'),
-        self::op_not_empty => t('must be set'),
+        self::op_set => t('must be set'),
+        self::op_not_empty => t('must be set and have some value'),
         self::op_empty => t('must be set and have no value'),
         self::op_not_set => t('must not be set'),
       ),
@@ -207,6 +211,7 @@ class context_condition_query_param extends context_condition {
       '#states' => array(
         'disabled' => array(
           $check  => array(
+            array('value' => self::op_set),
             array('value' => self::op_not_empty),
             array('value' => self::op_empty),
             array('value' => self::op_not_set),

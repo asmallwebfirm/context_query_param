@@ -15,7 +15,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
    * Structured array of tests to be run in self::testContextConditionExecute().
    */
   protected $test_conditions = array(
-    // Tests that ensure query parameters exist and their values are equal.
+    // Tests that ensure query parameters and their values are equal.
     'equal to' => array(
       'ruleset' => array(
         'name' => 'foo',
@@ -34,7 +34,7 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
         ),
       ),
     ),
-    // Tests that ensure query parameters exist and their values are not equal.
+    // Tests that ensure query parameters and their values are not equal.
     'not equal to' => array(
       'ruleset' => array(
         'name' => 'foo',
@@ -44,13 +44,12 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
       'requests' => array(
         'True' => array(
           array('foo' => 'notBar'),
-          array('foo' => 'baz', 'bar' => 'baz'),
+          array('bar' => 'baz'),
+          array(),
         ),
         'False' => array(
           array('foo' => 'bar'),
           array('bar' => 'baz', 'foo' => 'bar'),
-          array('notFoo' => 'notBar'),
-          array(),
         ),
       ),
     ),
@@ -87,8 +86,27 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
         ),
         'False' => array(
           array('foo' => ''),
-          array('bar' => 'baz'),
+          array('bar' => 'baz', 'foo' => ''),
           array(),
+        ),
+      ),
+    ),
+    // Tests that ensure query parameters exist.
+    'set' => array(
+      'ruleset' => array(
+        'name' => 'foo',
+        'operator' => 'set',
+      ),
+      'requests' => array(
+        'True' => array(
+          array('foo' => 'bar'),
+          array('foo' => ''),
+          array('foo' => 0, 'notFoo' => 'notBar'),
+        ),
+        'False' => array(
+          array(),
+          array('notFoo' => 'notBar'),
+          array('notFoo' => 'notBar', 'baz' => 'buzz'),
         ),
       ),
     ),
@@ -98,7 +116,6 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
         'name' => 'foo',
         'operator' => 'not_set',
       ),
-      // A number of requests against which to test.
       'requests' => array(
         'True' => array(
           array(),
