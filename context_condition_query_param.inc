@@ -23,6 +23,7 @@ class context_condition_query_param extends context_condition {
     // Initalize.
     $delta = 0;
     $values = $this->fetch_from_context($context, 'values');
+    $values['parameters'] = isset($values['parameters']) && !empty($values) ? unserialize($values['parameters']) : array();
     $notes = '<h3>' . t('Query parameters') . '</h3>';
     $notes .= '<p>' . t('Set as many parameter rulesets as you need. Uncheck "require all rulesets" to trigger this context when any one ruleset matches.') . '</p>';
 
@@ -76,6 +77,9 @@ class context_condition_query_param extends context_condition {
     // Remove the "add another" button.
     unset($values['add_another']);
 
+    // Serialize the parameters array...
+    $values['parameters'] = serialize($values['parameters']);
+
     return $values;
   }
 
@@ -93,6 +97,7 @@ class context_condition_query_param extends context_condition {
         $matches = 0;
 
         // Loop through all provided values.
+        $context_values['parameters'] = unserialize($context_values['parameters']);
         foreach ($context_values['parameters'] as $parameter) {
           // If we require all values, increment a counter.
           if ($context_values['require_all_params']) {
