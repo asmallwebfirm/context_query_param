@@ -67,10 +67,16 @@ class context_condition_query_param extends context_condition {
    * Overrides context_condition::condition_form_submit().
    */
   function condition_form_submit($values) {
-    // Clean up empty values for storage in neat, tidy array.
+    // Clean up the parameters array.
     foreach ($values['parameters'] as $key => $option)  {
+      // Clean up empty values for storage in neat, tidy array.
       if ($option['name'] == '') {
         unset($values['parameters'][$key]);
+      }
+
+      // Do not save a value when it has no useful meaning.
+      if (!in_array($option['operator'], array(self::op_equals, self::op_not_equals))) {
+        unset($values['parameters'][$key]['value']);
       }
     }
 
