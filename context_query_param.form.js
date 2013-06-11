@@ -30,7 +30,7 @@
       lastRowCopy.find('input[type="checkbox"]').val(1);
 
       // For each child item, update the delta in the input name + ID + div class.
-      lastRowCopy.find('input[name^="conditions[plugins][query_param][values][parameters]"]')
+      lastRowCopy.find('input[name^="conditions[plugins][query_param][values][parameters]"], select[name^="conditions[plugins][query_param][values][parameters]"]')
         .attr('id', function(i, n) {return attrReplace('id', $(this).attr('id'));})
         .attr('name', function(i, n) {return attrReplace('name', $(this).attr('name'));});
 
