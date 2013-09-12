@@ -35,6 +35,8 @@ class context_condition_query_param extends context_condition {
 
     // Build existing entries.
     foreach ($values['parameters'] as $val) {
+      // Some options (like not_set) will not have values, so set a placeholder
+      $val['value'] = isset($val['value']) ? $val['value'] : NULL;
       $form['parameters'][$delta] = $this->build_parameter_row($delta, $val['name'], $val['operator'], $val['value']);
       $delta++;
     }
