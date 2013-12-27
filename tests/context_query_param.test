@@ -177,3 +177,137 @@ class ContextQueryParamUnitTest extends DrupalUnitTestCase {
     }
   }
 }
+
+/**
+ * Behavioral tests for Context Query Parameters.
+ */
+class ContextQueryParamBehaviourTest extends DrupalWebTestCase {
+
+  /**
+   * An array of all test contexts.
+   */
+  protected $contexts = array();
+
+  /**
+   * Returns an array of query parameter name/value pairs that will satisfy all
+   * contexts of a given tag value.
+   *
+   * @param string $tag
+   *   The "tag" value associated with the desired contexts.
+   *
+   * @return array
+   *   An array query parameter values, keyed by associated parameter names that
+   *   satisfy query parameter conditions for all contexts matching a given tag.
+   */
+  protected function getQueryParamsByTag($tag) {
+    $params = array();
+
+    // Loop through all of the contexts we're aware of.
+    foreach ($this->contexts as $name => $context) {
+      // If the tag matches, create a query param name/value pair that matches.
+      if ($context->tag == $tag) {
+        $params = array_merge($params, $this->getQueryParamsByContext($name));
+      }
+    }
+
+    return $params;
+  }
+
+  /**
+   * Returns an array of query parameter name/value pairs which satisfy the
+   * given context.
+   *
+   * @param string $context
+   *   The name of the context for which we want query parameters.
+   *
+   * @return array
+   *   An array query parameter values, keyed by associated parameter names that
+   *   satisfy query parameter conditions for the given context
+   */
+  protected function getQueryParamsByContext($context) {
+    $pairs = array();
+
+    // Loop through all query param conditions and generate name/value pairs.
+    $conditions = unserialize($this->contexts[$context]->conditions['query_param']['values']['parameters']);
+    foreach ($conditions as $condition) {
+      if ($condition['operator'] == context_condition_query_param::op_equals) {
+        $pairs[$condition['name']] = $condition['value'];
+      }
+    }
+
+    return $pairs;
+  }
+
+  /**
+   * Returns an array of block deltas that should appear for contexts of a given
+   * tag.
+   *
+   * @param string $tag
+   *   The "tag" value associated with the desired contexts.
+   *
+   * @return array
+   *   An array of block deltas that should appear for tagged contexts.
+   */
+  protected function getBlockDeltasByTag($tag) {
+    $deltas = array();
+
+    // Loop through all contexts and find block deltas for each tagged context.
+    foreach ($this->contexts as $name => $context) {
+      if ($context->tag == $tag) {
+        $deltas = array_merge($deltas, $this->getBlockDeltasByContext($name));
+      }
+    }
+
+    return $deltas;
+  }
+
+  /**
+   * Returns an array of block deltas that should appear for a given context.
+   *
+   * @param string $context
+   *   The name of the context for which we want block deltas.
+   *
+   * @return array
+   *   An array of block deltas that should appear for a given context.
+   */
+  protected function getBlockDeltasByContext($context) {
+    $deltas = array();
+
+    // Loop through all blocks and return associated block deltas.
+    foreach ($this->contexts[$context]->reactions['block']['blocks'] as $block) {
+      $deltas[] = $block['delta'];
+    }
+
+    return $deltas;
+  }
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Context Query Parameters behavioral tests',
+      'description' => 'Behavioral tests for the Context Query Parameter context condition.',
+      'group' => 'Context',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('context_query_param_test');
+    drupal_flush_all_caches();
+
+    $this->contexts = module_invoke('context_query_param_test', 'context_default_contexts');
+  }
+
+  /**
+   * Tests multiple contexts sans "require all rulesets" simultaneously.
+   */
+  public function testMultipleRequireAllRulesets() {
+    $parameters = $this->getQueryParamsByTag(__FUNCTION__);
+    $blocks = $this->getBlockDeltasByTag(__FUNCTION__);
+    $this->drupalGet('node', array('query' => $parameters));
+
+    foreach ($blocks as $delta) {
+      $this->assertText($delta, format_string('The !block block was placed successfully.', array(
+        '!block' => $delta,
+      )));
+    }
+  }
+}

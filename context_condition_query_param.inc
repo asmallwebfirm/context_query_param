@@ -113,17 +113,17 @@ class context_condition_query_param extends context_condition {
               $matches++;
             }
           }
-          // If any one value is okay, set the condition as met and exit.
+          // If any one value is okay, set the condition as met and break.
           else {
             if ($this->check_query_params($query_params, $parameter)) {
               $this->condition_met($context);
-              return;
+              break;
             }
           }
         }
 
         // If we're here, we should only meet the condition of all params match.
-        if ($matches == count($context_values['parameters'])) {
+        if ($context_values['require_all_params'] && $matches == count($context_values['parameters'])) {
           $this->condition_met($context);
         }
       }
