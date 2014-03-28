@@ -53,7 +53,7 @@ function context_query_param_context_plugins() {
  * Implements hook_context_init().
  */
 function context_query_param_init() {
-  if ($plugin = context_get_plugin('condition', 'query_param')) {
+  if (!drupal_is_cli() && $plugin = context_get_plugin('condition', 'query_param')) {
     $params = drupal_get_query_parameters();
     $plugin->execute($params);
   }
